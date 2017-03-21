@@ -22,6 +22,7 @@ class TGENCLI(cli.CLI):
         self.bess = bess
         self.bess_lock = threading.Lock()
         self.cmd_db = cmd_db
+        self.__ports = dict()
         self.__running = dict()
         self.__running_lock = threading.Lock()
         self.this_dir = bess_path = os.getenv('BESS_PATH') + '/bessctl'
@@ -43,7 +44,9 @@ class TGENCLI(cli.CLI):
         Add session to set.  Note that its monitor thread is not started or stopped here.
         """
         with self.__running_lock:
-            self.__running[str(sess.port())] = sess
+            self.__running[str(sess.tx_port())] = sess
+        self.__ports[str(sess.tx_port())] = sess
+        self.__ports[str(sess.rx_port())] = sess
 
     def remove_session(self, port):
         """
@@ -52,12 +55,11 @@ class TGENCLI(cli.CLI):
         """
         with self.__running_lock:
             ret = self.__running.pop(port, None)
+        self.__ports.pop(port, None)
         return ret
 
     def get_session(self, port):
-        with self.__running_lock:
-            ret = self.__running.get(str(port), None)
-        return ret
+        return self.__ports.get(str(port), None)
 
     def get_var_attrs(self, var_token, partial_word):
         return self.cmd_db.get_var_attrs(self, var_token, partial_word)
@@ -102,26 +104,9 @@ class TGENCLI(cli.CLI):
             raise self.HandledError()
 
         except self.bess.Error as e:
-            self.err(e.errmsg)
+            self.err(e)
 
-            if e.err in errno.errorcode:
-                err_code = errno.errorcode[e.err]
-            else:
-                err_code = '<unknown>'
-
-            self.ferr.write('  BESS daemon response - errno=%d (%s: %s)\n' %
-                            (e.err, err_code, os.strerror(e.err)))
-
-            if e.details:
-                details = pprint.pformat(e.details)
-                initial_indent = '  error details: '
-                subsequent_indent = ' ' * len(initial_indent)
-
-                for i, line in enumerate(details.splitlines()):
-                    if i == 0:
-                        self.fout.write('%s%s\n' % (initial_indent, line))
-                    else:
-                        self.fout.write('%s%s\n' % (subsequent_indent, line))
+            self.ferr.write('  BESS daemon response - %s\n' % (e,))
 
             raise self.HandledError()
 
