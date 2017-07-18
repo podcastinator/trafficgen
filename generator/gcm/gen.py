@@ -36,7 +36,7 @@ def get_enc_payload(size):
     hdr = str(eth/ip/tcp)
 
     key = 0xdeadbeefdeadbeefdeadbeefdeadbeef
-    iv = 0xcafebabecafebabecafe
+    iv = 0xcafebabecafebabecafebabe
 
     pt = hdr + '\x65' * (size - len(hdr))
     aad = ''
