@@ -1,6 +1,7 @@
 import scapy.all as scapy
 
 from generator.common import TrafficSpec, Pipeline, setup_mclasses
+from ..gcm import get_enc_payload
 
 class FlowGenMode(object):
     name = 'flowgen'
@@ -39,7 +40,7 @@ class FlowGenMode(object):
         eth = scapy.Ether(src=spec.src_mac, dst=spec.dst_mac)
         ip = scapy.IP(src=spec.src_ip, dst=spec.dst_ip)
         tcp = scapy.TCP(sport=spec.src_port, dport=12345, seq=12345)
-        payload = "meow"
+        payload = get_enc_payload(spec.pkt_size)
         DEFAULT_TEMPLATE = str(eth/ip/tcp/payload)
 
         if spec.flow_rate is None:
