@@ -9,7 +9,7 @@ class FlowGenMode(object):
     class Spec(TrafficSpec):
         def __init__(self, pkt_size=60, num_flows=10, flow_duration=5,
                      flow_rate=None, arrival='uniform', duration='uniform',
-                     src_port=1001, **kwargs):
+                     src_port=1001, tunnel=True, **kwargs):
             self.pkt_size = pkt_size
             self.num_flows = num_flows
             self.flow_duration = flow_duration
@@ -17,6 +17,7 @@ class FlowGenMode(object):
             self.arrival = arrival
             self.duration = duration
             self.src_port = src_port
+            self.tunnel = tunnel
             super(FlowGenMode.Spec, self).__init__(**kwargs)
 
         def __str__(self):
@@ -40,7 +41,7 @@ class FlowGenMode(object):
         eth = scapy.Ether(src=spec.src_mac, dst=spec.dst_mac)
         ip = scapy.IP(src=spec.src_ip, dst=spec.dst_ip)
         tcp = scapy.TCP(sport=spec.src_port, dport=12345, seq=12345)
-        payload = get_enc_payload(spec.pkt_size)
+        payload = get_enc_payload(spec.pkt_size) if spec.tunnel else '\x65'*(spec.pkt_size - len(eth/ip/tcp))
         DEFAULT_TEMPLATE = str(eth/ip/tcp/payload)
 
         if spec.flow_rate is None:
