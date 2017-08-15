@@ -23,29 +23,30 @@
 """
 
 from aes_gcm import AES_GCM
-from Crypto.Random.random import getrandbits
 from Crypto.Util.number import long_to_bytes
 
 import sys
 import scapy.all as scapy
 
-def get_enc_payload(size):
+
+def get_tun_payload(size, enc=True):
     eth = scapy.Ether()
     ip = scapy.IP()
     tcp = scapy.TCP()
     hdr = str(eth/ip/tcp)
 
-    key = 0xdeadbeefdeadbeefdeadbeefdeadbeef
-    iv = 0xcafebabecafebabecafebabe
-
     pt = hdr + '\x65' * (size - len(hdr))
-    aad = ''
-    cipher = AES_GCM(key)
-    ct, tag = cipher.encrypt(iv, pt, aad)
 
-    payload = long_to_bytes(iv) + long_to_bytes(tag) + ct
+    if enc:
+        key = 0xdeadbeefdeadbeefdeadbeefdeadbeef
+        iv = 0xcafebabecafebabecafebabe
+        aad = ''
+        cipher = AES_GCM(key)
+        ct, tag = cipher.encrypt(iv, pt, aad)
+        payload = long_to_bytes(iv) + long_to_bytes(tag) + ct
+    else:
+        payload = pt
     print(''.join(x.encode('hex') for x in payload))
-    print(len(long_to_bytes(iv)), len(long_to_bytes(tag)), len(ct), len(payload))
     return payload
 
 
@@ -54,4 +55,4 @@ if __name__ == '__main__':
         print("Usage: ./gen.py <size of plaintext>")
         exit(0)
 
-    get_enc_payload(int(sys.argv[1]))
+    get_tun_payload(int(sys.argv[1]))
