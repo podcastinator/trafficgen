@@ -26,7 +26,7 @@ if __name__ == '__main__':
         name = "traces/tun%db%d.pcap" % (size, pkts)
 
     eth = scapy.Ether()
-    ip = scapy.IP()
+    ip = scapy.IP(src="10.0.0.1")
     tcp = scapy.TCP()
     payload = get_tun_payload(size, enc)
     pkt = eth/ip/tcp/payload

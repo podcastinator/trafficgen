@@ -31,7 +31,7 @@ import scapy.all as scapy
 
 def get_tun_payload(size, enc=True):
     eth = scapy.Ether()
-    ip = scapy.IP()
+    ip = scapy.IP(src="1.2.3.4")
     tcp = scapy.TCP()
     hdr = str(eth/ip/tcp)
 
