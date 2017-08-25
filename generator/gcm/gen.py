@@ -29,7 +29,7 @@ import sys
 import scapy.all as scapy
 
 
-def get_tun_payload(size, enc=True):
+def get_tun_payload(size, enc=True, lpriv=False):
     eth = scapy.Ether()
     ip = scapy.IP(src="1.2.3.4")
     tcp = scapy.TCP()
@@ -42,8 +42,14 @@ def get_tun_payload(size, enc=True):
         iv = 0xcafebabecafebabecafebabe
         aad = ''
         cipher = AES_GCM(key)
-        ct, tag = cipher.encrypt(iv, pt, aad)
-        payload = long_to_bytes(iv) + long_to_bytes(tag) + ct
+        if not lpriv:
+            ct, tag = cipher.encrypt(iv, pt, aad)
+            payload = long_to_bytes(iv) + long_to_bytes(tag) + ct
+        else:
+            ct1, tag1 = cipher.encrypt(iv, hdr, aad)
+            cipher = AES_GCM(key)
+            ct2, tag2 = cipher.encrypt(iv, '\x65' * (size - len(hdr)), aad)
+            payload = long_to_bytes(iv) + long_to_bytes(tag1) + ct1 + long_to_bytes(iv) + long_to_bytes(tag2) + ct2
     else:
         payload = pt
     print(''.join(x.encode('hex') for x in payload))

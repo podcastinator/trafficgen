@@ -10,24 +10,26 @@ def write(pkt, num, name):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("Usage: ./gen.py <size of plaintext> <num of packets> <enc(1 or 0)>")
+    if len(sys.argv) < 5 :
+        print("Usage: ./gen.py <size of plaintext> <num of packets> <enc(1 or 0)> <lpriv(1 or 0)>")
         exit(0)
 
     size = int(sys.argv[1])
     pkts = int(sys.argv[2])
-    flag = int(sys.argv[3])
+    encf = int(sys.argv[3])
+    lprf = int(sys.argv[4])
 
-    if flag == 1:
+    if encf == 1:
         enc = True
         name = "traces/enc%db%d.pcap" % (size, pkts)
     else:
         enc = False
         name = "traces/tun%db%d.pcap" % (size, pkts)
+    lpriv = True if lprf == 1 else False
 
     eth = scapy.Ether()
     ip = scapy.IP(src="10.0.0.1")
     tcp = scapy.TCP()
-    payload = get_tun_payload(size, enc)
+    payload = get_tun_payload(size, enc, lpriv)
     pkt = eth/ip/tcp/payload
     write(pkt, pkts, name)
