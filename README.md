@@ -7,7 +7,8 @@ A traffic generator built on [BESS](https://github.com/NetSys/bess).
 First, you'll need to install [BESS](https://github.com/NetSys/bess).
 
 ```
-$ git clone https://github.com/NetSys/bess.git
+$ git clone https://github.com/changlan/bess.git
+$ git checkout aes-test
 $ bess/build.py
 ```
 

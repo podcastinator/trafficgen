@@ -1,7 +1,11 @@
 import scapy.all as scapy
+import socket
 
 from generator.common import TrafficSpec, Pipeline, setup_mclasses
-from ..gcm import get_tun_payload
+
+
+def aton(ip):
+    return socket.inet_aton(ip)
 
 class FlowGenMode(object):
     name = 'flowgen'
@@ -44,11 +48,8 @@ class FlowGenMode(object):
         ip = scapy.IP(src=spec.src_ip, dst=spec.dst_ip)
         tcp = scapy.TCP(sport=spec.src_port, dport=12345, seq=12345)
 
-        if spec.enc or spec.tunnel:
-            payload = get_tun_payload(spec.pkt_size, spec.enc, spec.lpriv)
-        else:
-            payload = '\x65'*(spec.pkt_size - len(eth/ip/tcp))
-        DEFAULT_TEMPLATE = str(eth/ip/tcp/payload)
+        payload = '\x65'*(spec.pkt_size - len(eth/ip/tcp))
+        DEFAULT_TEMPLATE = str(ip/tcp/payload)
 
         if spec.flow_rate is None:
             spec.flow_rate = spec.num_flows / spec.flow_duration
@@ -67,6 +68,15 @@ class FlowGenMode(object):
                     flow_rate=flows_per_core,
                     flow_duration=spec.flow_duration, arrival=spec.arrival,
                     duration=spec.duration, quick_rampup=True),
+            SetMetadata(attrs=
+                        [{'name': 'ether_src', 'size': 6, 'value_bin': spec.src_mac.replace(':', '').decode('hex')},
+                         {'name': 'ether_dst', 'size': 6, 'value_bin': spec.dst_mac.replace(':', '').decode('hex')},
+                         {'name': 'ip_src', 'size': 4, 'value_bin': aton('10.0.10.1')},
+                         {'name': 'ip_dst', 'size': 4, 'value_bin': aton('10.0.10.2')},
+                         {'name': 'udp_sport', 'size': 2, 'value_bin': '\x11\x22'},
+                         {'name': 'udp_dport', 'size': 2, 'value_bin': '\x33\x44'}]),
+            AesUdpEncap(),
+            EtherEncap(),
             IPChecksum()
         ])
 
