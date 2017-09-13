@@ -76,6 +76,8 @@ class FlowGenMode(object):
                          {'name': 'udp_sport', 'size': 2, 'value_bin': '\x11\x22'},
                          {'name': 'udp_dport', 'size': 2, 'value_bin': '\x33\x44'}]),
             AesUdpEncap(),
+            # Random destination port
+            RandomUpdate(fields=[{'offset': 22, 'size': 2, 'min': 0x0400, 'max': 0xffff}]),
             EtherEncap(),
             IPChecksum()
         ])
