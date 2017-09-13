@@ -44,11 +44,10 @@ class FlowGenMode(object):
     @staticmethod
     def setup_tx_pipeline(cli, port, spec):
         setup_mclasses(cli, globals())
-        eth = scapy.Ether(src=spec.src_mac, dst=spec.dst_mac)
         ip = scapy.IP(src=spec.src_ip, dst=spec.dst_ip)
         tcp = scapy.TCP(sport=spec.src_port, dport=12345, seq=12345)
 
-        payload = '\x65'*(spec.pkt_size - len(eth/ip/tcp))
+        payload = '\x65'*(spec.pkt_size - len(ip/tcp))
         DEFAULT_TEMPLATE = str(ip/tcp/payload)
 
         if spec.flow_rate is None:
