@@ -537,9 +537,12 @@ def start(cli, port, mode, spec):
             # These modules are required across all pipelines
             tx_pipe.tx_rr = RoundRobin(gates=[0])
             tx_pipe.tx_q = Queue()
-            tx_pipe.modules += [tx_pipe.tx_q,
-                                Timestamp(offset=ts.tx_timestamp_offset),
-                                tx_pipe.tx_rr]
+            if ts.timestamp:
+                tx_pipe.modules += [tx_pipe.tx_q,
+                                    Timestamp(offset=ts.tx_timestamp_offset),
+                                    tx_pipe.tx_rr]
+            else:
+                tx_pipe.modules += [tx_pipe.tx_q, tx_pipe.tx_rr]
             q = QueueOut(port=port, qid=i)
             sink = Sink()
             tx_pipe.tx_rr.connect(q, 0, 0)
@@ -598,8 +601,10 @@ def start(cli, port, mode, spec):
                 front = [q]
                 cli.bess.attach_module(q.name, wid=core)
 
-            front += [
-                Measure(offset=ts.rx_timestamp_offset, jitter_sample_prob=1.0)]
+            if ts.timestamp:
+                front += [Measure(offset=ts.rx_timestamp_offset,
+                                  jitter_sample_prob=1.0)]
+
             rx_pipe.modules = front + rx_pipe.modules
 
             rx_pipes[core] = rx_pipe

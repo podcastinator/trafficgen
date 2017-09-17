@@ -90,7 +90,7 @@ class TrafficSpec(object):
                  tx_cores=None, rx_cores=None, src_mac='02:1e:67:9f:4d:bb',
                  dst_mac='02:1e:67:9f:4d:bb', src_ip='192.168.0.1',
                  dst_ip='10.0.0.1', tx_timestamp_offset=0,
-                 rx_timestamp_offset=0,
+                 rx_timestamp_offset=0, timestamp=True,
                  rfc2544_loss_rate=None,
                  rfc2544_window=DEFAULT_2544_WINDOW,
                  rfc2544_warmup=DEFAULT_2544_WARMUP,
@@ -105,6 +105,7 @@ class TrafficSpec(object):
         self.dst_ip = dst_ip
         self.tx_cores = tx_cores
         self.rx_cores = rx_cores
+        self.timestamp = timestamp
         self.tx_timestamp_offset = tx_timestamp_offset
         self.rx_timestamp_offset = rx_timestamp_offset
         self.rfc2544_loss_rate = rfc2544_loss_rate
@@ -376,6 +377,10 @@ class Session(object):
     def _get_rtt(self):
         stats = {'rtt_avg': 0, 'rtt_med': 0, 'rtt_99': 0,
                  'jitter_avg': 0, 'jitter_med': 0, 'jitter_99': 0}
+
+        if not self.__spec.timestamp:
+            return stats
+
         for core, rx_pipeline in self.__rx_pipelines.items():
             measure = rx_pipeline.modules[1]
             now = measure.get_summary()
