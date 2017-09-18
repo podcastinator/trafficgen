@@ -56,6 +56,25 @@ def get_tun_payload(size, enc=True, lpriv=False):
     return payload
 
 
+def enc_packets(pcap):
+    key = 0xdeadbeefdeadbeefdeadbeefdeadbeef
+    iv = 0xcafebabecafebabecafebabe
+    eth = scapy.Ether()
+    ip = scapy.IP(src="10.0.0.1")
+    udp = scapy.UDP()
+    pkts = scapy.rdpcap(pcap)
+    new_pkts = []
+    for pkt in pkts:
+        pt = str(pkt)
+        aad = ''
+        cipher = AES_GCM(key)
+        ct, tag = cipher.encrypt(iv, pt, aad)
+        payload = long_to_bytes(iv) + long_to_bytes(tag) + ct
+        new_pkt = (eth/ip/udp/scapy.Packet(payload))
+        new_pkts.append(new_pkt)
+    return new_pkts
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage: ./gen.py <size of plaintext>")
