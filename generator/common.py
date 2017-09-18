@@ -66,7 +66,8 @@ def setup_mclasses(cli, globs):
         'Update',
         'SetMetadata',
         'AesUdpEncap',
-        'EtherEncap'
+        'EtherEncap',
+        'GenericDecap'
     ]
     for name in MCLASSES:
         if name in globals():

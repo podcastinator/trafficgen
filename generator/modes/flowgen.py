@@ -44,11 +44,12 @@ class FlowGenMode(object):
     @staticmethod
     def setup_tx_pipeline(cli, port, spec):
         setup_mclasses(cli, globals())
+        eth = scapy.Ether()
         ip = scapy.IP(src=spec.src_ip, dst=spec.dst_ip)
         tcp = scapy.TCP(sport=spec.src_port, dport=12345, seq=12345)
 
-        payload = '\x65'*(spec.pkt_size - len(ip/tcp))
-        DEFAULT_TEMPLATE = str(ip/tcp/payload)
+        payload = '\x65'*(spec.pkt_size - len(eth/ip/tcp))
+        DEFAULT_TEMPLATE = str(eth/ip/tcp/payload)
 
         if spec.flow_rate is None:
             spec.flow_rate = spec.num_flows / spec.flow_duration
@@ -74,6 +75,7 @@ class FlowGenMode(object):
                          {'name': 'ip_dst', 'size': 4, 'value_bin': aton('10.0.10.2')},
                          {'name': 'udp_sport', 'size': 2, 'value_bin': '\x11\x22'},
                          {'name': 'udp_dport', 'size': 2, 'value_bin': '\x33\x44'}]),
+            GenericDecap(bytes=14),
             AesUdpEncap(),
             # Random destination port
             RandomUpdate(fields=[{'offset': 22, 'size': 2, 'min': 0x0400, 'max': 0xffff}]),
