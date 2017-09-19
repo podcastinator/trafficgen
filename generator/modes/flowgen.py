@@ -48,7 +48,7 @@ class FlowGenMode(object):
         ip = scapy.IP(src=spec.src_ip, dst=spec.dst_ip)
         tcp = scapy.TCP(sport=spec.src_port, dport=12345, seq=12345)
 
-        payload = '\x65'*(spec.pkt_size - len(eth/ip/tcp))
+        payload = '\x65'*(spec.pkt_size - len(ip/tcp))
         DEFAULT_TEMPLATE = str(eth/ip/tcp/payload)
 
         if spec.flow_rate is None:
